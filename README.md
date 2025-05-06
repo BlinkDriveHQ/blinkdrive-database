@@ -1,98 +1,189 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# BlinkDrive Database Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS and PostgreSQL-based REST API for managing metadata in the BlinkDrive Distributed File System.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Overview
 
-## Description
+The Database Server maintains all metadata for the BlinkDrive system, including file and directory information, user permissions, sharing settings, and storage locations. It provides a comprehensive REST API for the BlinkDrive SOAP Server to query and manipulate this metadata.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Features
 
-## Project setup
+- **Complete Metadata Management**: Tracks files, directories, permissions, and storage locations
+- **RESTful API**: Clean, well-documented endpoints following RESTful principles
+- **PostgreSQL Integration**: Robust relational database with Sequelize ORM
+- **User Permissions**: Fine-grained access control for files and directories
+- **File Sharing**: Support for sharing resources between users
+- **Storage Analytics**: Reporting on storage usage across the system
 
-```bash
-$ npm install
+## Requirements
+
+- Node.js 16.x or higher
+- PostgreSQL 13 or higher
+- npm or yarn package manager
+
+## Setup and Configuration
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/BlinkDriveHQ/blinkdrive-database.git
+   cd blinkdrive-database
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Create a `.env` file with configuration:
+
+   ```env
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USERNAME=postgres
+   DB_PASSWORD=your_password
+   DB_NAME=blinkdrive-distributed-storage
+   PORT=3000
+   ```
+
+4. Create the database:
+
+   ```bash
+   psql -U postgres -c "CREATE DATABASE \"blinkdrive-distributed-storage\";"
+   ```
+
+5. Run database migrations:
+
+   ```bash
+   npm run migration:run
+   ```
+
+6. Start the server:
+
+   ```bash
+   npm run start:dev
+   ```
+
+## API Documentation
+
+The API follows RESTful principles with the following main resources:
+
+### Directories
+
+- `GET /directories` - List all directories
+- `GET /directories/:id` - Get directory details
+- `GET /directories/parent/:parentId` - Get subdirectories
+- `POST /directories` - Create a directory
+- `PUT /directories/:id` - Update a directory
+- `PUT /directories/:id/rename` - Rename a directory
+- `PUT /directories/:id/move` - Move a directory
+- `DELETE /directories/:id` - Delete a directory
+
+### Files
+
+- `GET /files` - List all files
+- `GET /files/:id` - Get file details
+- `GET /files/directory/:directoryId` - Get files in directory
+- `POST /files` - Create file metadata
+- `PUT /files/:id` - Update file metadata
+- `PUT /files/:id/rename` - Rename a file
+- `PUT /files/:id/move` - Move a file
+- `DELETE /files/:id` - Delete a file
+
+### Sharing
+
+- `POST /sharing/file/:id` - Share a file
+- `GET /sharing/file/:id` - Get file shares
+- `POST /sharing/directory/:id` - Share a directory
+- `GET /sharing/directory/:id` - Get directory shares
+- `DELETE /sharing/file/:id` - Remove file share
+- `DELETE /sharing/directory/:id` - Remove directory share
+
+### Storage
+
+- `GET /storage/report` - Get overall storage usage
+- `GET /storage/report/directory/:id` - Get directory storage report
+- `GET /storage/nodes` - Get all storage nodes
+
+## Database Schema
+
+The main tables in the system are:
+
+- `directories` - Directory metadata
+- `files` - File metadata
+- `file_storage_locations` - Physical storage locations
+- `storage_nodes` - Storage node information
+- `file_shares` - File sharing records
+- `directory_shares` - Directory sharing records
+- `file_permissions` - File access permissions
+- `directory_permissions` - Directory access permissions
+- `file_operations_log` - Audit log of operations
+
+## Development
+
+### Project Structure
+
+```md
+/
+├── src/
+│   ├── app.module.ts           - Main module
+│   ├── main.ts                 - Application entry point
+│   ├── directories/            - Directories module
+│   ├── files/                  - Files module
+│   ├── sharing/                - Sharing module
+│   ├── storage/                - Storage module
+│   ├── resources/              - Common resources
+│   └── database/               - Database configuration
+├── database/
+│   ├── models/                 - Sequelize models
+│   └── postgres.db.ts          - DB connection config
+├── scripts/
+│   └── database.sql            - SQL schema definition
+└── package.json                - Package configuration
 ```
 
-## Compile and run the project
+### API Testing
 
-```bash
-# development
-$ npm run start
+The API can be tested using the built-in Swagger documentation:
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```md
+http://localhost:3000/api
 ```
 
-## Run tests
+### Running Tests
 
 ```bash
-# unit tests
-$ npm run test
+# Unit tests
+npm run test
 
-# e2e tests
-$ npm run test:e2e
+# End-to-end tests
+npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+# Test coverage
+npm run test:cov
 ```
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+For production deployment:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+1. Build the application
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+   ```bash
+   npm run build
+   ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+2. Run with Node.js or using PM2
 
-## Resources
+  ```bash
+  npm run start:prod
+  ```
 
-Check out a few resources that may come in handy when working with NestJS:
+## Contributing
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
